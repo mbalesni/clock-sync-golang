@@ -85,8 +85,13 @@ func TestBullying(t *testing.T) {
 
 	// list
 	for _, process := range processes {
-		fmt.Println(process.Id, process.Name, process.Time)
+		coordinatorString := ""
+		if process.Coordinator.Id == process.Id {
+			coordinatorString = "(Coordinator)"
+		}
+		fmt.Println(process.Id, process.Name, coordinatorString)
 	}
+	println()
 
 	// ELECTION from Id=4
 	processes[2].RunElection(-1)
@@ -117,10 +122,22 @@ func TestBullying(t *testing.T) {
 		// verify names update
 		assert.Equal(t, "2", string(process.Name[2:]), "Election count is correct")
 	}
+	println()
 
 	// list
 	for _, process := range processes {
-		fmt.Println(process.Id, process.Name, process.Time)
+		coordinatorString := ""
+		if process.Coordinator.Id == process.Id {
+			coordinatorString = "(Coordinator)"
+		}
+		fmt.Println(process.Id, process.Name, coordinatorString)
+	}
+
+	println()
+
+	// time
+	for _, process := range processes {
+		fmt.Println(process.Name, process.Time)
 	}
 
 }

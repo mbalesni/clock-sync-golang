@@ -1,5 +1,10 @@
 # Clock Synchronization by Bully
 
+
+## Resources
+- [Task Specification](https://courses.cs.ut.ee/LTAT.06.007/2021_spring/uploads/Main/Task2-2021.pdf)
+- Bully Election Algorithm: [Seminar 7](https://courses.cs.ut.ee/2021/ds/spring/Main/Instructions3), [Wiki](https://en.wikipedia.org/wiki/Bully_algorithm) (better)
+- Berkeley Time Sync: [Lecture, Slide 27](https://courses.cs.ut.ee/LTAT.06.007/2021_spring/uploads/Main/Lecture6-2021.pdf) (better read task specification, we don't need that complexity)
 ## Plan
 
 What's implemented:

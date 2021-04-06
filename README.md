@@ -27,6 +27,13 @@ What's implemented:
 - [ ] Loading from file
 - [ ] CLI 
 
+## Run tests
+
+```bash
+cd src
+go test
+```
+
 ## How to run
 
 I have compiled several binaries, just for you. Choose the one `clock-sync-by-bully*` that matches your OS and at least one should work. If neither of the binaries works, check [How to compile](#how-to-compile)

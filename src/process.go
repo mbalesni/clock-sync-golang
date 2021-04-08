@@ -21,8 +21,8 @@ type Process struct {
 	Name               string
 	InitialTime        *Time
 	Time               *Time
-	HigherProcesses    []*Process
-	LowerProcesses     []*Process
+	HigherProcesses    map[int]*Process
+	LowerProcesses     map[int]*Process
 	Coordinator        *Process
 	SendQueue          MessageQueue
 	GetQueue           MessageQueue
@@ -160,6 +160,9 @@ func (p *Process) Cycle() {
 func (p *Process) Init() {
 	p.SendQueue = MessageQueue{}
 	p.GetQueue = MessageQueue{}
+	p.HigherProcesses = make(map[int]*Process)
+	p.LowerProcesses = make(map[int]*Process)
+	p.Frozen = false
 	p.SendQueue.Init()
 	p.GetQueue.Init()
 }

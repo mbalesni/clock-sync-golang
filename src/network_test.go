@@ -25,47 +25,50 @@ func GetProcessIdxById(id int, processes []*Process) int {
 func TestBullying(t *testing.T) {
 	verbose := true
 	var processes map[int]*Process
+	processes = make(map[int]*Process)
 
 	// Inserting the processes
 
-	processes[1] = NewProcess(1, "A_0", &Time{Hours: 11, Minutes: 0})
-	processes[3] = NewProcess(3, "B_0", &Time{Hours: 13, Minutes: 33})
-	processes[4] = NewProcess(4, "D_0", &Time{Hours: 17, Minutes: 30})
-	processes[7] = NewProcess(7, "E_0", &Time{Hours: 23, Minutes: 0})
-	processes[5] = NewProcess(5, "F_0", &Time{Hours: 3, Minutes: 0})
+	processes[1] = NewProcess(1, "A_0", &Time{Hours: 11, Minutes: 0}, verbose)
+	processes[3] = NewProcess(3, "B_0", &Time{Hours: 13, Minutes: 33}, verbose)
+	processes[4] = NewProcess(4, "D_0", &Time{Hours: 17, Minutes: 30}, verbose)
+	processes[7] = NewProcess(7, "E_0", &Time{Hours: 23, Minutes: 0}, verbose)
+	processes[5] = NewProcess(5, "F_0", &Time{Hours: 3, Minutes: 0}, verbose)
 
 	// add higher & lower processes
-	for i, process := range processes {
-		for _, target_process := range processes {
+	for _, currentProcess := range processes {
+		for targetProcessId, targetProcess := range processes {
 
-			if target_process.Id > process.Id {
+			if targetProcessId > currentProcess.Id {
 
-				processes[i].HigherProcesses = append(processes[i].HigherProcesses, target_process)
-				processes[i].MaxCoordinatorWait += 1 // will need to wait for 1 cycle longer for each new higher process
+				currentProcess.HigherProcesses[targetProcessId] = targetProcess
+				currentProcess.MaxCoordinatorWait += 1 // will need to wait for 1 cycle longer for each new higher process
 
-			} else if target_process.Id < process.Id {
+			} else if targetProcess.Id < currentProcess.Id {
 
-				processes[i].LowerProcesses = append(processes[i].LowerProcesses, target_process)
+				currentProcess.LowerProcesses[targetProcessId] = targetProcess
 
 			}
 
 		}
 	}
 
-	for i, process := range processes {
+	/*
+		for i, process := range processes {
 
-		assert.Equal(t, len(processes)-i, len(process.HigherProcesses))
-		assert.Equal(t, i, len(process.LowerProcesses))
+			assert.Equal(t, len(processes)-i, len(process.HigherProcesses))
+			assert.Equal(t, i, len(process.LowerProcesses))
 
-	}
+		}
+	*/
 
 	// Asserting that the process distribution was ok
-	assert.Equal(t, 4, len(processes[0].HigherProcesses))
-	assert.Equal(t, 4, len(processes[3].LowerProcesses))
+	assert.Equal(t, 4, len(processes[1].HigherProcesses))
+	assert.Equal(t, 4, len(processes[7].LowerProcesses))
 
 	// start election from lowest process
 	// What's the point of adding an ID to the election??
-	processes[0].RunElection(-1)
+	processes[1].RunElection(-1)
 
 	// I didn't get this at all
 	for i := 0; i < 10; i++ {
@@ -73,8 +76,7 @@ func TestBullying(t *testing.T) {
 		for _, process := range processes {
 			for process.SendQueue.queue.Len() > 0 {
 				message := process.SendQueue.Pop()
-				sendToIdx := message.To
-				processes[sendToIdx].GetQueue.Add(message)
+				message.To.GetQueue.Add(message)
 			}
 		}
 
@@ -106,15 +108,14 @@ func TestBullying(t *testing.T) {
 	println()
 
 	// ELECTION from Id=4
-	processes[2].RunElection(-1)
+	processes[4].RunElection(-1)
 
 	for i := 0; i < 10; i++ {
 		// sync network (move messages from Send to Get queues)
 		for _, process := range processes {
 			for process.SendQueue.queue.Len() > 0 {
 				message := process.SendQueue.Pop()
-				sendToIdx := GetProcessIdxById(message.To, processes)
-				processes[sendToIdx].GetQueue.Add(message)
+				message.To.GetQueue.Add(message)
 			}
 		}
 

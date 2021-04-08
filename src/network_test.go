@@ -24,14 +24,15 @@ func GetProcessIdxById(id int, processes []*Process) int {
 
 func TestBullying(t *testing.T) {
 	verbose := true
-	var processes []*Process
+	var processes map[int]*Process
 
 	// Inserting the processes
-	processes = append(processes, NewProcess(1, "A_0", "11:00", verbose))
-	processes = append(processes, NewProcess(3, "B_0", "13:33", verbose))
-	processes = append(processes, NewProcess(4, "D_0", "17:30", verbose))
-	processes = append(processes, NewProcess(7, "E_0", "23:00", verbose))
-	processes = append(processes, NewProcess(5, "F_0", "3:00", verbose))
+
+	processes[1] = NewProcess(1, "A_0", &Time{Hours: 11, Minutes: 0})
+	processes[3] = NewProcess(3, "B_0", &Time{Hours: 13, Minutes: 33})
+	processes[4] = NewProcess(4, "D_0", &Time{Hours: 17, Minutes: 30})
+	processes[7] = NewProcess(7, "E_0", &Time{Hours: 23, Minutes: 0})
+	processes[5] = NewProcess(5, "F_0", &Time{Hours: 3, Minutes: 0})
 
 	// add higher & lower processes
 	for i, process := range processes {
@@ -39,16 +40,23 @@ func TestBullying(t *testing.T) {
 
 			if target_process.Id > process.Id {
 
-				processes[i].HigherProcesses = append(processes[i].HigherProcesses, &ProcessShallow{Id: target_process.Id})
+				processes[i].HigherProcesses = append(processes[i].HigherProcesses, target_process)
 				processes[i].MaxCoordinatorWait += 1 // will need to wait for 1 cycle longer for each new higher process
 
 			} else if target_process.Id < process.Id {
 
-				processes[i].LowerProcesses = append(processes[i].LowerProcesses, &ProcessShallow{Id: target_process.Id})
+				processes[i].LowerProcesses = append(processes[i].LowerProcesses, target_process)
 
 			}
 
 		}
+	}
+
+	for i, process := range processes {
+
+		assert.Equal(t, len(processes)-i, len(process.HigherProcesses))
+		assert.Equal(t, i, len(process.LowerProcesses))
+
 	}
 
 	// Asserting that the process distribution was ok
@@ -65,7 +73,7 @@ func TestBullying(t *testing.T) {
 		for _, process := range processes {
 			for process.SendQueue.queue.Len() > 0 {
 				message := process.SendQueue.Pop()
-				sendToIdx := GetProcessIdxById(message.To, processes)
+				sendToIdx := message.To
 				processes[sendToIdx].GetQueue.Add(message)
 			}
 		}

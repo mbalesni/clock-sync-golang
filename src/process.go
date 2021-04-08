@@ -9,26 +9,21 @@ import (
 )
 
 type Message struct {
-	From        int
-	To          int
+	From        *Process
+	To          *Process
 	MessageType string // one of ELECTION|ELECTION_RESPONSE|COORDINATOR
 	ElectionId  int
-	Time        int64
-}
-
-type ProcessShallow struct {
-	Id int
+	Time        *Time
 }
 
 type Process struct {
 	Id                 int
 	Name               string
-	InitialTime        string
-	InitialSysTime     time.Time
-	Time               string
-	HigherProcesses    []*ProcessShallow
-	LowerProcesses     []*ProcessShallow
-	Coordinator        ProcessShallow
+	InitialTime        *Time
+	Time               *Time
+	HigherProcesses    []*Process
+	LowerProcesses     []*Process
+	Coordinator        *Process
 	SendQueue          MessageQueue
 	GetQueue           MessageQueue
 	WaitingElection    int
@@ -39,7 +34,7 @@ type Process struct {
 	Frozen             bool
 }
 
-func NewProcess(id int, name string, initialTime string, verbose bool) *Process {
+func NewProcess(id int, name string, initialTime *Time, verbose bool) *Process {
 	process := Process{Id: id, Name: name, InitialTime: initialTime,
 		Time: initialTime, WaitingElection: -1, WaitingCoordinator: -1,
 		MaxElectionWait: 1, Verbose: verbose}
@@ -76,7 +71,7 @@ func (p *Process) RunElection(electionId int) {
 	}
 
 	for _, target := range p.HigherProcesses {
-		message := p.NewElectionMessage(target.Id, "ELECTION", electionId)
+		message := p.NewElectionMessage(target, "ELECTION", electionId)
 		p.SendQueue.Add(message)
 	}
 
@@ -93,12 +88,12 @@ func (p *Process) GetElectionCount() int {
 	return electionCount
 }
 
-func (p *Process) NewMessage(toId int, messageType string) Message {
-	return Message{Time: time.Now().Unix(), From: p.Id, To: toId, MessageType: messageType}
+func (p *Process) NewMessage(to *Process, messageType string) Message {
+	return Message{Time: CurrentTime(), From: p, To: to, MessageType: messageType}
 }
 
-func (p *Process) NewElectionMessage(toId int, messageType string, electionId int) Message {
-	return Message{Time: time.Now().Unix(), From: p.Id, To: toId, MessageType: messageType, ElectionId: electionId}
+func (p *Process) NewElectionMessage(to *Process, messageType string, electionId int) Message {
+	return Message{Time: CurrentTime(), From: p, To: to, MessageType: messageType, ElectionId: electionId}
 }
 
 func (p *Process) ProcessMessages() {
@@ -106,7 +101,7 @@ func (p *Process) ProcessMessages() {
 		message := p.GetQueue.Pop()
 		if message.MessageType == "ELECTION" {
 			if p.Verbose {
-				fmt.Println("P=", p.Id, "got an ELECTION from", message.From)
+				fmt.Println("P=", p.Id, "got an ELECTION from", message.From.Id)
 			}
 			// respond to election request
 			electionResponseMessage := p.NewMessage(message.From, "ELECTION_RESPONSE")
@@ -114,16 +109,16 @@ func (p *Process) ProcessMessages() {
 			p.RunElection(message.ElectionId)
 		} else if message.MessageType == "ELECTION_RESPONSE" {
 			if p.Verbose {
-				fmt.Println("P=", p.Id, "got an ELECTION_RESPONSE from", message.From)
+				fmt.Println("P=", p.Id, "got an ELECTION_RESPONSE from", message.From.Id)
 			}
 			p.WaitingElection = -1   // stop waiting
 			p.WaitingCoordinator = 0 // start waiting
 		} else if message.MessageType == "COORDINATOR" {
 			if p.Verbose {
-				fmt.Println("P=", p.Id, "got a COORDINATOR from", message.From)
+				fmt.Println("P=", p.Id, "got a COORDINATOR from", message.From.Id)
 			}
 			p.UpdateElectionCount()
-			p.Coordinator.Id = message.From
+			p.Coordinator = message.From
 			p.WaitingCoordinator = -1 // stop waiting
 		}
 	}
@@ -148,9 +143,9 @@ func (p *Process) Cycle() {
 		}
 		p.UpdateElectionCount()
 		p.WaitingElection = -1 // stop waiting
-		p.Coordinator.Id = p.Id
+		p.Coordinator = p
 		for _, process := range p.LowerProcesses {
-			electionMessage := p.NewMessage(process.Id, "COORDINATOR")
+			electionMessage := p.NewMessage(process, "COORDINATOR")
 			p.SendQueue.Add(electionMessage)
 		}
 	}

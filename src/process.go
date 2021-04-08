@@ -1,10 +1,10 @@
 package src
 
 import (
-	"container/list"
 	"fmt"
 	"math/rand"
 	"strconv"
+
 	"time"
 )
 
@@ -22,9 +22,10 @@ type ProcessShallow struct {
 
 type Process struct {
 	Id                 int
-	Name               string // e.g. A_0
+	Name               string
 	InitialTime        string
-	Time               string // MVP without ticking and averaging
+	InitialSysTime     time.Time
+	Time               string
 	HigherProcesses    []*ProcessShallow
 	LowerProcesses     []*ProcessShallow
 	Coordinator        ProcessShallow
@@ -35,6 +36,7 @@ type Process struct {
 	MaxElectionWait    int
 	MaxCoordinatorWait int
 	Verbose            bool
+	Frozen             bool
 }
 
 func NewProcess(id int, name string, initialTime string, verbose bool) *Process {
@@ -165,23 +167,4 @@ func (p *Process) Init() {
 	p.GetQueue = MessageQueue{}
 	p.SendQueue.Init()
 	p.GetQueue.Init()
-}
-
-type MessageQueue struct {
-	queue *list.List
-}
-
-func (mq *MessageQueue) Init() {
-	mq.queue = list.New()
-}
-
-func (mq *MessageQueue) Add(message Message) {
-	mq.queue.PushBack(message)
-}
-
-func (mq *MessageQueue) Pop() Message {
-	elem := mq.queue.Front()        // First element
-	message := elem.Value.(Message) // Cast abstract Queue Element to Message
-	mq.queue.Remove(elem)           // Dequeue
-	return message
 }

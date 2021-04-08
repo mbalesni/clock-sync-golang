@@ -7,11 +7,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// 1, A_0, 11:00am
-// 3, B_0, 13:33pm
-// 4, D_0, 17:30pm
-// 7, E_0, 23:00pm
-// 5, F_0, 3:00am
+// 1, A_0, 11:00
+// 3, B_0, 13:33
+// 4, D_0, 17:30
+// 7, E_0, 23:00
+// 5, F_0, 3:00
 
 func GetProcessIdxById(id int, processes []*Process) int {
 	for i, process := range processes {
@@ -23,9 +23,10 @@ func GetProcessIdxById(id int, processes []*Process) int {
 }
 
 func TestBullying(t *testing.T) {
-	verbose := false
+	verbose := true
 	var processes []*Process
 
+	// Inserting the processes
 	processes = append(processes, NewProcess(1, "A_0", "11:00", verbose))
 	processes = append(processes, NewProcess(3, "B_0", "13:33", verbose))
 	processes = append(processes, NewProcess(4, "D_0", "17:30", verbose))
@@ -50,12 +51,15 @@ func TestBullying(t *testing.T) {
 		}
 	}
 
+	// Asserting that the process distribution was ok
 	assert.Equal(t, 4, len(processes[0].HigherProcesses))
 	assert.Equal(t, 4, len(processes[3].LowerProcesses))
 
 	// start election from lowest process
+	// What's the point of adding an ID to the election??
 	processes[0].RunElection(-1)
 
+	// I didn't get this at all
 	for i := 0; i < 10; i++ {
 		// sync network (move messages from Send to Get queues)
 		for _, process := range processes {

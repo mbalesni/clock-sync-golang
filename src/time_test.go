@@ -36,3 +36,18 @@ func TestTime(t *testing.T) {
 	}
 
 }
+
+func TestTimeAddDiff(t *testing.T) {
+
+	twoAm := &Time{Hours: 2, Minutes: 59}
+
+	satanTime := &Time{Hours: 0, Minutes: 33}
+
+	twoAmSatanTimeDiff := twoAm.Distance(satanTime)
+
+	twoAm.Add(twoAmSatanTimeDiff)
+
+	fmt.Println(twoAmSatanTimeDiff)
+	fmt.Println(twoAm)
+
+}

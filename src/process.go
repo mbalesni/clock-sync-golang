@@ -51,7 +51,9 @@ func (p *Process) UpdateElectionCount() {
 	p.Name = fmt.Sprintf("%s_%d", string(p.Name[:1]), electionCount)
 }
 
-func (p *Process) SyncTime() {
+func (p *Process) SyncTime(time *Time) {
+
+	p.Time.Add(time)
 
 }
 
@@ -71,8 +73,10 @@ func (p *Process) RunElection(electionId int) {
 	}
 
 	for _, target := range p.HigherProcesses {
-		message := p.NewElectionMessage(target, "ELECTION", electionId)
-		p.SendQueue.Add(message)
+		if target.Frozen != true {
+			message := p.NewElectionMessage(target, "ELECTION", electionId)
+			p.SendQueue.Add(message)
+		}
 	}
 
 	// run logic of initiating election, i.e.
@@ -88,8 +92,15 @@ func (p *Process) GetElectionCount() int {
 	return electionCount
 }
 
+func (p *Process) NewSyncMessage(to *Process, messageType string, time *Time) Message {
+
+	return Message{Time: time, From: p, To: to, MessageType: messageType}
+
+}
+
 func (p *Process) NewMessage(to *Process, messageType string) Message {
 	return Message{Time: CurrentTime(), From: p, To: to, MessageType: messageType}
+
 }
 
 func (p *Process) NewElectionMessage(to *Process, messageType string, electionId int) Message {
@@ -120,6 +131,12 @@ func (p *Process) ProcessMessages() {
 			p.UpdateElectionCount()
 			p.Coordinator = message.From
 			p.WaitingCoordinator = -1 // stop waiting
+		} else if message.MessageType == "CLOCK_SYNC" {
+			fmt.Println("Got a clock sync")
+			if p.Verbose {
+				fmt.Println("P=", p.Id, "got a CLOCK_SYNC from", message.From.Id)
+			}
+			p.SyncTime(message.Time)
 		}
 	}
 }
@@ -145,8 +162,11 @@ func (p *Process) Cycle() {
 		p.WaitingElection = -1 // stop waiting
 		p.Coordinator = p
 		for _, process := range p.LowerProcesses {
-			electionMessage := p.NewMessage(process, "COORDINATOR")
-			p.SendQueue.Add(electionMessage)
+			if process.Frozen != true {
+				electionMessage := p.NewMessage(process, "COORDINATOR")
+				p.SendQueue.Add(electionMessage)
+
+			}
 		}
 	}
 

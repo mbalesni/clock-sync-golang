@@ -1,6 +1,9 @@
 package src
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type Time struct {
 	Hours   int
@@ -14,16 +17,8 @@ func (t *Time) Add(other *Time) *Time {
 
 	if minuteSum > 59 {
 
-		if minuteSum < 120 {
-
-			t.Minutes = minuteSum - 60
-			t.Hours = t.Hours + 1
-
-		} else {
-
-			t.Hours = t.Hours + 2
-
-		}
+		t.Minutes = minuteSum - 60
+		t.Hours = t.Hours + 1
 
 	} else {
 
@@ -31,21 +26,21 @@ func (t *Time) Add(other *Time) *Time {
 
 	}
 
-	if hourSum > 24 {
+	fmt.Println(hourSum)
+	if hourSum > 23 {
+		t.Hours = hourSum - 24
+		t.Hours = t.Hours + 1
 
-		if hourSum < 48 {
+	} else {
+		if t.Hours+other.Hours == 24 {
 
-			t.Hours = 48 - hourSum
-			t.Hours = t.Hours + 1
+			t.Hours = 0
 
 		} else {
 
-			t.Hours = t.Hours + 2
+			t.Hours = t.Hours + other.Hours
 
 		}
-
-	} else {
-		t.Hours = t.Hours + other.Hours
 	}
 
 	return t

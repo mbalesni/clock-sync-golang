@@ -39,9 +39,9 @@ func TestTime(t *testing.T) {
 
 func TestTimeAddDiff(t *testing.T) {
 
-	twoAm := &Time{Hours: 2, Minutes: 59}
+	twoAm := &Time{Hours: 11, Minutes: 0}
 
-	satanTime := &Time{Hours: 0, Minutes: 33}
+	satanTime := &Time{Hours: 3, Minutes: 0}
 
 	twoAmSatanTimeDiff := twoAm.Distance(satanTime)
 

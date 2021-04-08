@@ -67,7 +67,7 @@ func (n *Network) Berkley() {
 
 	for _, target := range n.Coordinator.LowerProcesses {
 		// Send how much they have to adjust their clock
-		message := n.Coordinator.NewSyncMessage(target, "CLOCK_SYNC", n.Coordinator.Time.Distance(target.Time))
+		message := n.Coordinator.NewSyncMessage(target, "CLOCK_SYNC", target.Time.Distance(n.Coordinator.Time))
 		n.Coordinator.SendQueue.Add(message)
 	}
 

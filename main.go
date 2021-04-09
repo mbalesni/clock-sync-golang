@@ -2,10 +2,14 @@ package main
 
 import (
 	"clock_sync_golang/src"
+	"time"
+
 	"fmt"
-	prompt "github.com/c-bata/go-prompt"
 	"os"
+	"strconv"
 	"strings"
+
+	prompt "github.com/c-bata/go-prompt"
 )
 
 var network *src.Network
@@ -34,7 +38,7 @@ func executor(in string) {
 		switch command := whitespaceSplit[0]; command {
 		case "Read":
 			{
-				if len(whitespaceSplit) < 2 || len(whitespaceSplit) > 2 {
+				if len(whitespaceSplit) != 2 {
 
 					fmt.Println("Read takes one argument, a text file")
 
@@ -72,21 +76,149 @@ func executor(in string) {
 					network.Clock()
 				}
 			}
+		case "Set-time":
+			{
+				if len(whitespaceSplit) != 3 {
+					fmt.Println("Set-time takes 2 arguments, the process id and the time hour:minute")
+				} else {
+					processId, err := strconv.ParseInt(whitespaceSplit[1], 10, 64)
+
+					if err != nil {
+
+						fmt.Println("Failed to parse process id")
+					} else {
+
+						hourMinutes := strings.Split(whitespaceSplit[2], ":")
+
+						if len(hourMinutes) != 2 {
+
+							fmt.Println("There cannot be more, or less, than 2 values delimited by :")
+
+						} else {
+
+							hours, err := strconv.ParseInt(hourMinutes[0], 10, 64)
+
+							if err != nil {
+
+								fmt.Println("Failed to parse the hours")
+
+							} else {
+
+								minutes, err := strconv.ParseInt(hourMinutes[1], 10, 64)
+
+								if err != nil {
+
+									fmt.Println("Failed to parse the minutes")
+
+								} else {
+
+									network.SetTime(int(processId), src.Time{Hours: int(hours), Minutes: int(minutes)})
+
+								}
+							}
+						}
+					}
+				}
+			}
+		case "Reload":
+			{
+				if len(whitespaceSplit) != 2 {
+
+					fmt.Println("Read takes one argument, a text file")
+
+				} else {
+
+					file_location := whitespaceSplit[1]
+
+					file, err := src.Parse(file_location)
+
+					if err != nil {
+
+						fmt.Printf("Something bad happened whilst reloading", err)
+
+					} else {
+
+						network.Reload(file)
+
+					}
+				}
+			}
+		case "Freeze":
+			{
+				if len(whitespaceSplit) != 2 {
+
+					fmt.Println("Freeze takes one argument, a processId")
+
+				} else {
+
+					processId, err := strconv.ParseInt(whitespaceSplit[1], 10, 64)
+
+					if err != nil {
+
+						fmt.Println("Failed to parse process id")
+					} else {
+
+						network.Freeze(int(processId))
+
+					}
+
+				}
+			}
+		case "Unfreeze":
+			{
+				if len(whitespaceSplit) != 2 {
+
+					fmt.Println("Unfreeze takes one argument, a processId")
+
+				} else {
+
+					processId, err := strconv.ParseInt(whitespaceSplit[1], 10, 64)
+
+					if err != nil {
+
+						fmt.Println("Failed to parse process id")
+					} else {
+
+						network.Unfreeze(int(processId))
+
+					}
+
+				}
+			}
+
+		case "Kill":
+			{
+				if len(whitespaceSplit) != 2 {
+
+					fmt.Println("Kill takes one argument, a processId")
+
+				} else {
+
+					processId, err := strconv.ParseInt(whitespaceSplit[1], 10, 64)
+
+					if err != nil {
+
+						fmt.Println("Failed to parse process id")
+					} else {
+
+						network.Kill(int(processId))
+
+					}
+				}
+			}
 		}
 	}
-
 }
 
 func completer(in prompt.Document) []prompt.Suggest {
 	s := []prompt.Suggest{
-		//{Text: "Materialize", Description: "Loads the default config, no input needed"},
-		//{Text: "Read", Description: "Reads a .txt file in the specified format"},
-		{Text: "List", Description: "Lists all current active nodes in the ring, no input"},
-		{Text: "Lookup", Description: "Lookups up a node, key:start_node"},
-		{Text: "Join", Description: "Joins the given node Id with the ring"},
-		{Text: "Leave", Description: "Shuts down the specified Node"},
-		{Text: "Shortcut", Description: "Adds a shortcut to the specified node"},
-		//{Text: "Shutdown", Description: "Shuts down the whole cluster"},
+		{Text: "List", Description: "List all processes"},
+		{Text: "Clock", Description: "List all processes' clocks"},
+		{Text: "Set-time", Description: "Sets time of a process"},
+		{Text: "Reload", Description: "Reloads file, needs file location"},
+		{Text: "Freeze", Description: "Freeze a process"},
+		{Text: "Unfreeze", Description: "Unfreezes a process"},
+		{Text: "Kill", Description: "Murders a process"},
 	}
 	return prompt.FilterHasPrefix(s, in.GetWordBeforeCursor(), true)
 }
@@ -104,7 +236,43 @@ func main() {
 
 		if strings.HasSuffix(parsedArgs, ".txt") {
 
+			currentTime := src.CurrentTime()
 			executor(fmt.Sprintf("Read %s", parsedArgs))
+
+			timer1 := time.NewTicker(5 * time.Second)
+			timer2 := time.NewTicker(1 * time.Minute)
+
+			// Synchronizing
+			go func() {
+				for {
+					select {
+					case <-timer1.C:
+						{
+							//fmt.Println("Berkleying")
+							network.Berkley()
+						}
+					}
+				}
+			}()
+
+			go func() {
+				for {
+					select {
+					case <-timer2.C:
+						//fmt.Println("Time-ing")
+						tempCurrentTime := src.CurrentTime()
+						diff := currentTime.Distance(tempCurrentTime)
+						// Clock ticking
+						for _, process := range network.Processes {
+
+							process.SyncTime(diff)
+
+						}
+						currentTime = tempCurrentTime
+
+					}
+				}
+			}()
 
 			p := prompt.New(
 				executor,

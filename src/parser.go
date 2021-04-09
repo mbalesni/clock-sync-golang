@@ -42,7 +42,7 @@ func Parse(input string) (*[]*Process, error) {
 			hoursParsed, _ := strconv.ParseInt(timeList[0], 10, 64)
 			minutesParsed, _ := strconv.ParseInt(timeList[1], 10, 64)
 
-			process := NewProcess(int(idInt), name, &Time{Hours: int(hoursParsed), Minutes: int(minutesParsed)}, false)
+			process := NewProcess(int(idInt), name, &Time{Hours: int(hoursParsed), Minutes: int(minutesParsed)}, name[2:], false)
 
 			processes = append(processes, process)
 

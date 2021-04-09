@@ -12,7 +12,7 @@ What's implemented:
 - [X] Process Class (simulated, not actual multiprocessing)
 - [X] Inter-process communication
 - [X] Election through Bullying
-- [ ] Clock ticking // might wanna skip on that
+- [x] Clock ticking
 - [x] Clock synchronization
 - [x] Network Class
 
@@ -25,7 +25,7 @@ What's implemented:
   - [x] Unfreeze
   - [x] Reload
 - [x] Loading from file
-- [ ] CLI 
+- [x] CLI 
 
 ## Run tests
 

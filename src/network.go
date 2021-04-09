@@ -1,6 +1,8 @@
 package src
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Network struct {
 	Processes   map[int]*Process
@@ -39,7 +41,6 @@ func SpawnNetwork(processes *[]*Process) *Network {
 		if process.Frozen != true {
 
 			network.BullyStartingFrom(process.Id)
-			network.Berkley()
 
 			break
 
@@ -51,7 +52,7 @@ func SpawnNetwork(processes *[]*Process) *Network {
 
 		if process.Frozen != true {
 
-			process.Name = fmt.Sprintf("%s_%d", string(process.Name[:1]), 0)
+			process.Name = fmt.Sprintf("%s%s", string(process.Name[:2]), process.InitialCount)
 
 		}
 
@@ -150,7 +151,7 @@ func (n *Network) Freeze(processId int) *Process {
 			if process.Frozen != true {
 
 				n.BullyStartingFrom(process.Id)
-				n.Berkley()
+				//n.Berkley()
 
 				return n.Processes[processId]
 
@@ -170,10 +171,11 @@ func (n *Network) Unfreeze(processId int) *Process {
 
 	if processId > n.Coordinator.Id {
 
-		newTime := *(n.Coordinator.InitialTime)
-		n.Coordinator.Time = &newTime
+		newTime := *(n.Processes[processId].InitialTime)
+		n.Processes[processId].Time = &newTime
+
 		n.BullyStartingFrom(processId)
-		n.Berkley()
+		//n.Berkley()
 
 	} else {
 
@@ -184,7 +186,7 @@ func (n *Network) Unfreeze(processId int) *Process {
 			if process.Frozen != true {
 
 				n.BullyStartingFrom(process.Id)
-				n.Berkley()
+				//n.Berkley()
 
 				return n.Processes[processId]
 
@@ -229,7 +231,7 @@ func (n *Network) Kill(processId int) {
 			if process.Frozen != true {
 
 				n.BullyStartingFrom(process.Id)
-				n.Berkley()
+				//n.Berkley()
 				break
 
 			}
@@ -260,7 +262,7 @@ func (n *Network) Reload(processes *[]*Process) {
 		if process.Frozen != true {
 
 			n.BullyStartingFrom(process.Id)
-			n.Berkley()
+			//n.Berkley()
 			break
 
 		}
@@ -272,12 +274,6 @@ func (n *Network) Reload(processes *[]*Process) {
 func (n *Network) SetTime(processId int, time Time) *Process {
 
 	n.Processes[processId].Time = &time
-
-	if processId == n.Coordinator.Id {
-
-		n.Berkley()
-
-	}
 
 	return n.Processes[processId]
 

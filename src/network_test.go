@@ -1,9 +1,8 @@
 package src
 
 import (
-	"testing"
-
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 // 1, A_0, 11:00

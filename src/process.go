@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"strconv"
-
+	"sync"
 	"time"
 )
 
@@ -18,6 +18,7 @@ type Message struct {
 
 type Process struct {
 	Id                 int
+	InitialCount       string
 	Name               string
 	InitialTime        *Time
 	Time               *Time
@@ -32,15 +33,16 @@ type Process struct {
 	MaxCoordinatorWait int
 	Verbose            bool
 	Frozen             bool
+	mu                 sync.Mutex
 }
 
-func NewProcess(id int, name string, initialTime *Time, verbose bool) *Process {
+func NewProcess(id int, name string, initialTime *Time, initialCount string, verbose bool) *Process {
 
 	initialTimeCopy := *initialTime
 
 	process := Process{Id: id, Name: name, InitialTime: &initialTimeCopy,
 		Time: initialTime, WaitingElection: -1, WaitingCoordinator: -1,
-		MaxElectionWait: 1, Verbose: verbose}
+		MaxElectionWait: 1, Verbose: verbose, InitialCount: initialCount}
 	process.Init()
 	return &process
 }
@@ -55,9 +57,9 @@ func (p *Process) UpdateElectionCount() {
 }
 
 func (p *Process) SyncTime(time *Time) {
-
+	p.mu.Lock()
 	p.Time.Add(time)
-
+	p.mu.Unlock()
 }
 
 func (p *Process) RunElection(electionId int) {

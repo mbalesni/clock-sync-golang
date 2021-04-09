@@ -80,6 +80,7 @@ func (n *Network) Berkley() {
 	for _, receiver := range n.Processes {
 
 		receiver.ProcessMessages()
+		fmt.Println(receiver.Time, receiver.InitialTime)
 
 	}
 

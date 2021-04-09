@@ -1,7 +1,7 @@
 package src
 
 import (
-	"fmt"
+	//"fmt"
 	"time"
 )
 
@@ -27,7 +27,6 @@ func (t *Time) Add(other *Time) *Time {
 	}
 
 	hourSum = t.Hours + other.Hours
-	fmt.Println(hourSum, t, other)
 	if hourSum > 24 {
 		t.Hours = hourSum - 24
 	} else {

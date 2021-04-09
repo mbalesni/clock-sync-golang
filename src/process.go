@@ -35,7 +35,10 @@ type Process struct {
 }
 
 func NewProcess(id int, name string, initialTime *Time, verbose bool) *Process {
-	process := Process{Id: id, Name: name, InitialTime: initialTime,
+
+	initialTimeCopy := *initialTime
+
+	process := Process{Id: id, Name: name, InitialTime: &initialTimeCopy,
 		Time: initialTime, WaitingElection: -1, WaitingCoordinator: -1,
 		MaxElectionWait: 1, Verbose: verbose}
 	process.Init()
@@ -110,7 +113,9 @@ func (p *Process) NewElectionMessage(to *Process, messageType string, electionId
 func (p *Process) ProcessMessages() {
 	for p.GetQueue.queue.Len() > 0 {
 		message := p.GetQueue.Pop()
-		if message.MessageType == "ELECTION" {
+		switch messageType := message.MessageType; messageType {
+		
+		case "ELECTION" {
 			if p.Verbose {
 				fmt.Println("P=", p.Id, "got an ELECTION from", message.From.Id)
 			}
@@ -118,20 +123,20 @@ func (p *Process) ProcessMessages() {
 			electionResponseMessage := p.NewMessage(message.From, "ELECTION_RESPONSE")
 			p.SendQueue.Add(electionResponseMessage)
 			p.RunElection(message.ElectionId)
-		} else if message.MessageType == "ELECTION_RESPONSE" {
+		case "ELECTION_RESPONSE" {
 			if p.Verbose {
 				fmt.Println("P=", p.Id, "got an ELECTION_RESPONSE from", message.From.Id)
 			}
 			p.WaitingElection = -1   // stop waiting
 			p.WaitingCoordinator = 0 // start waiting
-		} else if message.MessageType == "COORDINATOR" {
+		case "COORDINATOR" {
 			if p.Verbose {
 				fmt.Println("P=", p.Id, "got a COORDINATOR from", message.From.Id)
 			}
 			p.UpdateElectionCount()
 			p.Coordinator = message.From
 			p.WaitingCoordinator = -1 // stop waiting
-		} else if message.MessageType == "CLOCK_SYNC" {
+		case "CLOCK_SYNC" {
 			fmt.Println("Got a clock sync")
 			if p.Verbose {
 				fmt.Println("P=", p.Id, "got a CLOCK_SYNC from", message.From.Id)

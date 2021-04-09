@@ -38,14 +38,26 @@ func SpawnNetwork(processes *[]*Process) *Network {
 
 		if process.Frozen != true {
 
-			n.BullyStartingFrom(process.Id)
-			n.Berkley()
+			network.BullyStartingFrom(process.Id)
+			network.Berkley()
 
-			return network.Processes[processId]
+			break
 
 		}
 
 	}
+
+	for _, process := range network.Processes {
+
+		if process.Frozen != true {
+
+			process.Name = fmt.Sprintf("%s_%d", string(p.Name[:1]), 0)
+
+		}
+
+	}
+
+	fmt.Println("Coordinator chosen: ", network.Coordinator.Id, network.Coordinator.Name)
 
 	return network
 

@@ -12,18 +12,18 @@ What's implemented:
 - [X] Process Class (simulated, not actual multiprocessing)
 - [X] Inter-process communication
 - [X] Election through Bullying
-- [ ] Clock ticking
-- [ ] Clock synchronization
-- [ ] Network Class (now inter-process communication is done by a test script `network_test.go`)
+- [ ] Clock ticking // might wanna skip on that
+- [x] Clock synchronization
+- [x] Network Class (now inter-process communication is done by a test script `network_test.go`)
 
-- [ ] Operations
+- [x] Operations
   - [X] List
   - [X] Clock
-  - [ ] Kill
-  - [ ] Set-time
-  - [ ] Freeze
-  - [ ] Unfreeze
-  - [ ] Reload
+  - [x] Kill
+  - [x] Set-time
+  - [x] Freeze
+  - [x] Unfreeze
+  - [x] Reload
 - [ ] Loading from file
 - [ ] CLI 
 

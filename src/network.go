@@ -34,6 +34,19 @@ func SpawnNetwork(processes *[]*Process) *Network {
 		}
 	}
 
+	for _, process := range network.Processes {
+
+		if process.Frozen != true {
+
+			n.BullyStartingFrom(process.Id)
+			n.Berkley()
+
+			return network.Processes[processId]
+
+		}
+
+	}
+
 	return network
 
 }
@@ -80,7 +93,7 @@ func (n *Network) Berkley() {
 	for _, receiver := range n.Processes {
 
 		receiver.ProcessMessages()
-		fmt.Println(receiver.Time, receiver.InitialTime)
+		//fmt.Println(receiver.Time, receiver.InitialTime)
 
 	}
 
@@ -125,6 +138,7 @@ func (n *Network) Freeze(processId int) *Process {
 			if process.Frozen != true {
 
 				n.BullyStartingFrom(process.Id)
+				n.Berkley()
 
 				return n.Processes[processId]
 
@@ -144,7 +158,10 @@ func (n *Network) Unfreeze(processId int) *Process {
 
 	if processId > n.Coordinator.Id {
 
+		newTime := *(n.Coordinator.InitialTime)
+		n.Coordinator.Time = &newTime
 		n.BullyStartingFrom(processId)
+		n.Berkley()
 
 	} else {
 
@@ -155,6 +172,7 @@ func (n *Network) Unfreeze(processId int) *Process {
 			if process.Frozen != true {
 
 				n.BullyStartingFrom(process.Id)
+				n.Berkley()
 
 				return n.Processes[processId]
 
@@ -179,15 +197,73 @@ func (n *Network) Kill(processId int) {
 
 	delete(n.Processes, processId)
 
+	if processId == n.Coordinator.Id {
+
+		n.Coordinator = nil
+
+		for _, process := range n.Processes {
+
+			if process.Frozen != true {
+
+				newTime := *(process.InitialTime)
+				process.Time = &newTime
+
+			}
+
+		}
+
+		for _, process := range n.Processes {
+
+			if process.Frozen != true {
+
+				n.BullyStartingFrom(process.Id)
+				n.Berkley()
+				break
+
+			}
+
+		}
+
+	}
+
+}
+
+func (n *Network) Reload(processes *[]*Process) {
+
+	for _, process := range *processes {
+
+		processStruct, ok := n.Processes[process.Id]
+
+		if ok == false {
+
+			process.Verbose = false
+			process.Init()
+			network.Processes[process.Id] = process
+
+		}
+	}
+
 	for _, process := range n.Processes {
 
 		if process.Frozen != true {
 
 			n.BullyStartingFrom(process.Id)
-
+			n.Berkley()
 			break
 
 		}
+
+	}
+
+}
+
+func (n *Network) SetTime(processId int, time Time) *Process {
+
+	n.Processes[processId].Time = time
+
+	if processId == n.Coordinator.Id {
+
+		n.Berkley()
 
 	}
 

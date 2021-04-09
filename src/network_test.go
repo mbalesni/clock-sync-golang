@@ -34,8 +34,6 @@ func TestBullying(t *testing.T) {
 
 	network := SpawnNetwork(&processes)
 
-	network.BullyStartingFrom(1)
-
 	for _, process := range processes {
 		// verify election
 		assert.Equal(t, 7, process.Coordinator.Id, "Coordinator is chosen correctly")
@@ -45,7 +43,7 @@ func TestBullying(t *testing.T) {
 		assert.Equal(t, -1, process.WaitingElection, "Not waiting for coordinator reply after election over")
 
 		// verify names update
-		assert.Equal(t, "1", string(process.Name[2:]), "Election count is correct")
+		assert.Equal(t, "0", string(process.Name[2:]), "Election count is correct")
 	}
 
 	network.BullyStartingFrom(4)
@@ -59,14 +57,8 @@ func TestBullying(t *testing.T) {
 		assert.Equal(t, -1, process.WaitingElection, "Not waiting for coordinator reply after election over")
 
 		// verify names update
-		assert.Equal(t, "2", string(process.Name[2:]), "Election count is correct")
+		assert.Equal(t, "1", string(process.Name[2:]), "Election count is correct")
 	}
-
-	network.List()
-
-	println()
-
-	network.Clock()
 
 }
 
@@ -83,20 +75,6 @@ func TestFreezeBullying(t *testing.T) {
 
 	network := SpawnNetwork(&processes)
 
-	network.BullyStartingFrom(1)
-
-	for _, process := range processes {
-		// verify election
-		assert.Equal(t, 7, process.Coordinator.Id, "Coordinator is chosen correctly")
-
-		// verify waiting
-		assert.Equal(t, -1, process.WaitingCoordinator, "Not waiting for coordinator reply after election over")
-		assert.Equal(t, -1, process.WaitingElection, "Not waiting for coordinator reply after election over")
-
-		// verify names update
-		assert.Equal(t, "1", string(process.Name[2:]), "Election count is correct")
-	}
-
 	network.Freeze(3)
 
 	network.BullyStartingFrom(4)
@@ -110,14 +88,8 @@ func TestFreezeBullying(t *testing.T) {
 		assert.Equal(t, -1, process.WaitingElection, "Not waiting for coordinator reply after election over")
 
 		// verify names update
-		assert.Equal(t, "2", string(process.Name[2:]), "Election count is correct")
+		assert.Equal(t, "1", string(process.Name[2:]), "Election count is correct")
 	}
-
-	network.List()
-
-	println()
-
-	network.Clock()
 
 }
 

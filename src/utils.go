@@ -44,12 +44,12 @@ func unidirectionalRingDistance(from, to, maxSize int) int {
 
 func MinutesDistance(from, to int) int {
 
-	return unidirectionalRingDistance(from, to, 59)
+	return unidirectionalRingDistance(from, to, 60)
 
 }
 
 func HoursDistance(from, to int) int {
 
-	return unidirectionalRingDistance(from, to, 23)
+	return unidirectionalRingDistance(from, to, 24)
 
 }

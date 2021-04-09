@@ -26,10 +26,10 @@ func (t *Time) Add(other *Time) *Time {
 
 	}
 
+	hourSum = t.Hours + other.Hours
 	fmt.Println(hourSum, t, other)
-	if hourSum > 23 {
+	if hourSum > 24 {
 		t.Hours = hourSum - 24
-		t.Hours = t.Hours + 1
 	} else {
 		if t.Hours+other.Hours == 24 {
 

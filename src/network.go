@@ -51,7 +51,7 @@ func SpawnNetwork(processes *[]*Process) *Network {
 
 		if process.Frozen != true {
 
-			process.Name = fmt.Sprintf("%s_%d", string(p.Name[:1]), 0)
+			process.Name = fmt.Sprintf("%s_%d", string(process.Name[:1]), 0)
 
 		}
 
@@ -244,13 +244,13 @@ func (n *Network) Reload(processes *[]*Process) {
 
 	for _, process := range *processes {
 
-		processStruct, ok := n.Processes[process.Id]
+		_, ok := n.Processes[process.Id]
 
 		if ok == false {
 
 			process.Verbose = false
 			process.Init()
-			network.Processes[process.Id] = process
+			n.Processes[process.Id] = process
 
 		}
 	}
@@ -271,12 +271,14 @@ func (n *Network) Reload(processes *[]*Process) {
 
 func (n *Network) SetTime(processId int, time Time) *Process {
 
-	n.Processes[processId].Time = time
+	n.Processes[processId].Time = &time
 
 	if processId == n.Coordinator.Id {
 
 		n.Berkley()
 
 	}
+
+	return n.Processes[processId]
 
 }

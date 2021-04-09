@@ -1,8 +1,7 @@
-package parser
+package src
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -20,7 +19,7 @@ func Parse(input string) (*[]*Process, error) {
 
 	scanner := bufio.NewScanner(f)
 
-	currentLine := 0
+	currentLine := ""
 
 	var processes []*Process
 
@@ -38,17 +37,18 @@ func Parse(input string) (*[]*Process, error) {
 			name := lineSplit[1]
 			time := lineSplit[2]
 
-			time := strings.Split(val, ":")
-			hoursParsed, _ := strconv.ParseInt(time[0], 10, 64)
-			minutesParsed, _ := strconv.ParseInt(time[1], 10, 64)
+			timeList := strings.Split(time, ":")
+			idInt, _ := strconv.ParseInt(id, 10, 64)
+			hoursParsed, _ := strconv.ParseInt(timeList[0], 10, 64)
+			minutesParsed, _ := strconv.ParseInt(timeList[1], 10, 64)
 
-			process := NewProcess(id, name, &Time{Hours: hoursParsed, Minutes: minutesParsed}, false)
+			process := NewProcess(int(idInt), name, &Time{Hours: int(hoursParsed), Minutes: int(minutesParsed)}, false)
 
-			processes = append(processes, &process)
+			processes = append(processes, process)
 
 		} else {
 
-			return processes, fmt.Errorf("Incomplete line")
+			return &processes, fmt.Errorf("Incomplete line")
 
 		}
 

@@ -114,34 +114,42 @@ func (p *Process) ProcessMessages() {
 	for p.GetQueue.queue.Len() > 0 {
 		message := p.GetQueue.Pop()
 		switch messageType := message.MessageType; messageType {
-		
-		case "ELECTION" {
-			if p.Verbose {
-				fmt.Println("P=", p.Id, "got an ELECTION from", message.From.Id)
+
+		case "ELECTION":
+			{
+				if p.Verbose {
+					fmt.Println("P=", p.Id, "got an ELECTION from", message.From.Id)
+				}
+				// respond to election request
+				electionResponseMessage := p.NewMessage(message.From, "ELECTION_RESPONSE")
+				p.SendQueue.Add(electionResponseMessage)
+				p.RunElection(message.ElectionId)
 			}
-			// respond to election request
-			electionResponseMessage := p.NewMessage(message.From, "ELECTION_RESPONSE")
-			p.SendQueue.Add(electionResponseMessage)
-			p.RunElection(message.ElectionId)
-		case "ELECTION_RESPONSE" {
-			if p.Verbose {
-				fmt.Println("P=", p.Id, "got an ELECTION_RESPONSE from", message.From.Id)
+		case "ELECTION_RESPONSE":
+			{
+				if p.Verbose {
+					fmt.Println("P=", p.Id, "got an ELECTION_RESPONSE from", message.From.Id)
+				}
+				p.WaitingElection = -1   // stop waiting
+				p.WaitingCoordinator = 0 // start waiting
 			}
-			p.WaitingElection = -1   // stop waiting
-			p.WaitingCoordinator = 0 // start waiting
-		case "COORDINATOR" {
-			if p.Verbose {
-				fmt.Println("P=", p.Id, "got a COORDINATOR from", message.From.Id)
+		case "COORDINATOR":
+			{
+				if p.Verbose {
+					fmt.Println("P=", p.Id, "got a COORDINATOR from", message.From.Id)
+				}
+				p.UpdateElectionCount()
+				p.Coordinator = message.From
+				p.WaitingCoordinator = -1
 			}
-			p.UpdateElectionCount()
-			p.Coordinator = message.From
-			p.WaitingCoordinator = -1 // stop waiting
-		case "CLOCK_SYNC" {
-			fmt.Println("Got a clock sync")
-			if p.Verbose {
-				fmt.Println("P=", p.Id, "got a CLOCK_SYNC from", message.From.Id)
+		case "CLOCK_SYNC":
+			{
+				//fmt.Println("Got a clock sync")
+				if p.Verbose {
+					fmt.Println("P=", p.Id, "got a CLOCK_SYNC from", message.From.Id)
+				}
+				p.SyncTime(message.Time)
 			}
-			p.SyncTime(message.Time)
 		}
 	}
 }

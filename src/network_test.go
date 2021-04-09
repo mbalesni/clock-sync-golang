@@ -22,19 +22,21 @@ func GetProcessIdxById(id int, processes []*Process) int {
 }
 
 func TestBullying(t *testing.T) {
-	verbose := true
+	//verbose := true
 
-	var processes []*Process
+	var processes *[]*Process
 
-	processes = append(processes, NewProcess(1, "A_0", &Time{Hours: 11, Minutes: 0}, verbose))
-	processes = append(processes, NewProcess(3, "B_0", &Time{Hours: 13, Minutes: 33}, verbose))
-	processes = append(processes, NewProcess(4, "D_0", &Time{Hours: 17, Minutes: 30}, verbose))
-	processes = append(processes, NewProcess(7, "E_0", &Time{Hours: 23, Minutes: 0}, verbose))
-	processes = append(processes, NewProcess(5, "F_0", &Time{Hours: 3, Minutes: 0}, verbose))
+	processes, err := Parse("../processes_file.txt")
 
-	network := SpawnNetwork(&processes)
+	if err != nil {
 
-	for _, process := range processes {
+		t.Fail()
+
+	}
+
+	network := SpawnNetwork(processes)
+
+	for _, process := range *processes {
 		// verify election
 		assert.Equal(t, 7, process.Coordinator.Id, "Coordinator is chosen correctly")
 
@@ -48,7 +50,7 @@ func TestBullying(t *testing.T) {
 
 	network.BullyStartingFrom(4)
 
-	for _, process := range processes {
+	for _, process := range *processes {
 		// verify election
 		assert.Equal(t, 7, process.Coordinator.Id, "Coordinator is chosen correctly")
 
@@ -63,23 +65,23 @@ func TestBullying(t *testing.T) {
 }
 
 func TestFreezeBullying(t *testing.T) {
-	verbose := true
+	//verbose := true
 
-	var processes []*Process
+	var processes *[]*Process
 
-	processes = append(processes, NewProcess(1, "A_0", &Time{Hours: 11, Minutes: 0}, verbose))
-	processes = append(processes, NewProcess(3, "B_0", &Time{Hours: 13, Minutes: 33}, verbose))
-	processes = append(processes, NewProcess(4, "D_0", &Time{Hours: 17, Minutes: 30}, verbose))
-	processes = append(processes, NewProcess(7, "E_0", &Time{Hours: 23, Minutes: 0}, verbose))
-	processes = append(processes, NewProcess(5, "F_0", &Time{Hours: 3, Minutes: 0}, verbose))
+	processes, err := Parse("../processes_file.txt")
 
-	network := SpawnNetwork(&processes)
+	if err != nil {
+
+		t.Fail()
+
+	}
+
+	network := SpawnNetwork(processes)
 
 	network.Freeze(3)
 
-	network.BullyStartingFrom(4)
-
-	for _, process := range processes {
+	for _, process := range *processes {
 		// verify election
 		assert.Equal(t, 7, process.Coordinator.Id, "Coordinator is chosen correctly")
 
@@ -88,30 +90,28 @@ func TestFreezeBullying(t *testing.T) {
 		assert.Equal(t, -1, process.WaitingElection, "Not waiting for coordinator reply after election over")
 
 		// verify names update
-		assert.Equal(t, "1", string(process.Name[2:]), "Election count is correct")
+		assert.Equal(t, "0", string(process.Name[2:]), "Election count is correct")
 	}
 
 }
 
 func TestFreezeUnfreezeKillBullying(t *testing.T) {
-	verbose := true
+	//verbose := true
 
-	var processes []*Process
+	var processes *[]*Process
 
-	processes = append(processes, NewProcess(1, "A_0", &Time{Hours: 11, Minutes: 0}, verbose))
-	processes = append(processes, NewProcess(3, "B_0", &Time{Hours: 13, Minutes: 33}, verbose))
-	processes = append(processes, NewProcess(4, "D_0", &Time{Hours: 17, Minutes: 30}, verbose))
-	processes = append(processes, NewProcess(7, "E_0", &Time{Hours: 23, Minutes: 0}, verbose))
-	processes = append(processes, NewProcess(5, "F_0", &Time{Hours: 3, Minutes: 0}, verbose))
+	processes, err := Parse("../processes_file.txt")
 
-	network := SpawnNetwork(&processes)
+	if err != nil {
+		t.Fail()
+	}
+
+	network := SpawnNetwork(processes)
 
 	println("Froze 3")
 	network.Freeze(3)
-	println("Bullied from 1")
-	network.BullyStartingFrom(1)
 
-	for _, process := range processes {
+	for _, process := range *processes {
 
 		if process.Frozen != true {
 			// verify election
@@ -122,7 +122,7 @@ func TestFreezeUnfreezeKillBullying(t *testing.T) {
 			assert.Equal(t, -1, process.WaitingElection, "Not waiting for coordinator reply after election over")
 
 			// verify names update
-			assert.Equal(t, "1", string(process.Name[2]), "Election count is correct")
+			assert.Equal(t, "0", string(process.Name[2]), "Election count is correct")
 
 		}
 	}

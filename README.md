@@ -14,7 +14,7 @@ What's implemented:
 - [X] Election through Bullying
 - [ ] Clock ticking // might wanna skip on that
 - [x] Clock synchronization
-- [x] Network Class (now inter-process communication is done by a test script `network_test.go`)
+- [x] Network Class
 
 - [x] Operations
   - [X] List
@@ -24,7 +24,7 @@ What's implemented:
   - [x] Freeze
   - [x] Unfreeze
   - [x] Reload
-- [ ] Loading from file
+- [x] Loading from file
 - [ ] CLI 
 
 ## Run tests

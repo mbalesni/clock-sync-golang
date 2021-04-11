@@ -1,7 +1,7 @@
 package main
 
 import (
-	"clock_sync_golang/src"
+	"clock-sync-by-bully/src"
 	"time"
 
 	"fmt"

@@ -1,4 +1,4 @@
-module clock_sync_golang
+module clock-sync-by-bully
 
 go 1.15
 

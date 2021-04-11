@@ -7,7 +7,22 @@
 - Berkeley Time Sync: [Lecture, Slide 27](https://courses.cs.ut.ee/LTAT.06.007/2021_spring/uploads/Main/Lecture6-2021.pdf) (better read task specification, we don't need that complexity)
 ## Plan
 
-What's implemented:
+Fix issues:
+
+- [X] Killing doesn't notify who the new coordinator is and which process started the election (as per specification)
+- [X] After reloading the coordinator doesn't change to the correct one, or several coordinators appear (is election happening?)
+- [X] Freeze doesn't stop Time
+
+- [X] Time is not rendered properly
+- [X] Killing all processes results crashes the program
+- [X] Attempting to Freeze/Unfreeze/Set-time to a non-existing process crashes the program
+- [ ] ??? Freezing the coordinator isn't followed by time sync with new coordinator
+- [ ] ??? Should update `currentProcess.MaxCoordinatorWait` on processes changes
+- [ ] ??? Synchronizing Clock after Killing/Loading/ is not instant and takes several seconds (why?)
+- [ ] ??? When a coordinator is killed, which process starts election, basically a random one (first in the list, but the list order changes within one running program)?
+- [ ] ??? When sending out messages, processes check if target is not frozen. It might make more sense if the Network does that.
+
+Implement:
 
 - [X] Process Class (simulated, not actual multiprocessing)
 - [X] Inter-process communication

@@ -1,8 +1,9 @@
 package src
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // 1, A_0, 11:00
@@ -112,7 +113,7 @@ func TestFreezeUnfreezeKillBullying(t *testing.T) {
 
 	for _, process := range *processes {
 
-		if process.Frozen != true {
+		if !process.Frozen {
 			// verify election
 			assert.Equal(t, 7, process.Coordinator.Id, "Coordinator is chosen correctly")
 

@@ -1,5 +1,7 @@
 package src
 
+import "fmt"
+
 func absInt(x int) int {
 
 	if x < 0 {
@@ -52,4 +54,8 @@ func HoursDistance(from, to int) int {
 
 	return unidirectionalRingDistance(from, to, 24)
 
+}
+
+func FormatTime(hours int, minutes int) string {
+	return fmt.Sprintf("%02d:%02d", hours, minutes)
 }

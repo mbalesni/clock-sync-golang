@@ -57,9 +57,11 @@ func (p *Process) UpdateElectionCount() {
 }
 
 func (p *Process) SyncTime(time *Time) {
-	p.mu.Lock()
-	p.Time.Add(time)
-	p.mu.Unlock()
+	if !p.Frozen {
+		p.mu.Lock()
+		p.Time.Add(time)
+		p.mu.Unlock()
+	}
 }
 
 func (p *Process) RunElection(electionId int) {
@@ -177,7 +179,7 @@ func (p *Process) Cycle() {
 		p.WaitingElection = -1 // stop waiting
 		p.Coordinator = p
 		for _, process := range p.LowerProcesses {
-			if process.Frozen != true {
+			if !process.Frozen {
 				electionMessage := p.NewMessage(process, "COORDINATOR")
 				p.SendQueue.Add(electionMessage)
 

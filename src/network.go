@@ -18,27 +18,12 @@ func SpawnNetwork(processes *[]*Process) *Network {
 		process.Init()
 		network.Processes[process.Id] = process
 	}
-	// Auto discovery
-	for _, currentProcess := range network.Processes {
-		for targetProcessId, targetProcess := range network.Processes {
 
-			if targetProcessId > currentProcess.Id {
-
-				currentProcess.HigherProcesses[targetProcessId] = targetProcess
-				currentProcess.MaxCoordinatorWait += 1 // will need to wait for 1 cycle longer for each new higher process
-
-			} else if targetProcess.Id < currentProcess.Id {
-
-				currentProcess.LowerProcesses[targetProcessId] = targetProcess
-
-			}
-
-		}
-	}
+	network.AutoDiscovery()
 
 	for _, process := range network.Processes {
 
-		if process.Frozen != true {
+		if !process.Frozen {
 
 			network.BullyStartingFrom(process.Id)
 
@@ -50,7 +35,7 @@ func SpawnNetwork(processes *[]*Process) *Network {
 
 	for _, process := range network.Processes {
 
-		if process.Frozen != true {
+		if !process.Frozen {
 
 			process.Name = fmt.Sprintf("%s%s", string(process.Name[:2]), process.InitialCount)
 
@@ -62,6 +47,34 @@ func SpawnNetwork(processes *[]*Process) *Network {
 
 	return network
 
+}
+
+func (n *Network) AutoDiscovery() {
+	// populate LowerProcesses and HigherProcesses for each process
+	for _, currentProcess := range n.Processes {
+		for targetProcessId, targetProcess := range n.Processes {
+
+			if targetProcessId > currentProcess.Id {
+
+				_, alreadyIn := currentProcess.HigherProcesses[targetProcessId]
+
+				if !alreadyIn {
+					currentProcess.HigherProcesses[targetProcessId] = targetProcess
+					currentProcess.MaxCoordinatorWait += 1 // will need to wait for 1 cycle longer for each new higher process
+				}
+
+			} else if targetProcess.Id < currentProcess.Id {
+
+				_, alreadyIn := currentProcess.LowerProcesses[targetProcessId]
+
+				if !alreadyIn {
+					currentProcess.LowerProcesses[targetProcessId] = targetProcess
+				}
+
+			}
+
+		}
+	}
 }
 
 func (n *Network) BullyStartingFrom(processId int) *Process {
@@ -127,12 +140,12 @@ func (n *Network) List() {
 func (n *Network) Clock() {
 
 	for _, process := range n.Processes {
-		fmt.Println(process.Id, process.Name, process.Time)
+		fmt.Println(process.Id, process.Name, FormatTime(process.Time.Hours, process.Time.Minutes))
 	}
 
 }
 
-func (n *Network) Freeze(processId int) *Process {
+func (n *Network) Freeze(processId int) {
 
 	n.Processes[processId].Frozen = true
 
@@ -148,12 +161,12 @@ func (n *Network) Freeze(processId int) *Process {
 
 		for _, process := range n.Processes {
 
-			if process.Frozen != true {
+			if !process.Frozen {
 
 				n.BullyStartingFrom(process.Id)
 				//n.Berkley()
 
-				return n.Processes[processId]
+				return
 
 			}
 
@@ -161,11 +174,9 @@ func (n *Network) Freeze(processId int) *Process {
 
 	}
 
-	return n.Processes[processId]
-
 }
 
-func (n *Network) Unfreeze(processId int) *Process {
+func (n *Network) Unfreeze(processId int) {
 
 	n.Processes[processId].Frozen = false
 
@@ -183,20 +194,18 @@ func (n *Network) Unfreeze(processId int) *Process {
 
 		for _, process := range n.Processes {
 
-			if process.Frozen != true {
+			if !process.Frozen {
 
 				n.BullyStartingFrom(process.Id)
 				//n.Berkley()
 
-				return n.Processes[processId]
+				return
 
 			}
 
 		}
 
 	}
-
-	return n.Processes[processId]
 
 }
 
@@ -211,13 +220,19 @@ func (n *Network) Kill(processId int) {
 
 	delete(n.Processes, processId)
 
+	processesLeft := len(n.Processes)
+	if processesLeft == 0 {
+		fmt.Println("No processes left.")
+		return
+	}
+
 	if processId == n.Coordinator.Id {
 
 		n.Coordinator = nil
 
 		for _, process := range n.Processes {
 
-			if process.Frozen != true {
+			if !process.Frozen {
 
 				newTime := *(process.InitialTime)
 				process.Time = &newTime
@@ -228,7 +243,9 @@ func (n *Network) Kill(processId int) {
 
 		for _, process := range n.Processes {
 
-			if process.Frozen != true {
+			if !process.Frozen {
+
+				fmt.Println("Starting election from:", process.Id)
 
 				n.BullyStartingFrom(process.Id)
 				//n.Berkley()
@@ -238,6 +255,8 @@ func (n *Network) Kill(processId int) {
 
 		}
 
+		fmt.Println("The new coordinator is:", n.Coordinator.Id)
+
 	}
 
 }
@@ -246,9 +265,9 @@ func (n *Network) Reload(processes *[]*Process) {
 
 	for _, process := range *processes {
 
-		_, ok := n.Processes[process.Id]
+		_, exists := n.Processes[process.Id]
 
-		if ok == false {
+		if !exists {
 
 			process.Verbose = false
 			process.Init()
@@ -257,9 +276,11 @@ func (n *Network) Reload(processes *[]*Process) {
 		}
 	}
 
+	n.AutoDiscovery()
+
 	for _, process := range n.Processes {
 
-		if process.Frozen != true {
+		if !process.Frozen {
 
 			n.BullyStartingFrom(process.Id)
 			//n.Berkley()

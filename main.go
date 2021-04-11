@@ -87,6 +87,11 @@ func executor(in string) {
 
 						fmt.Println("Failed to parse process id")
 					} else {
+						_, exists := network.Processes[int(processId)]
+						if !exists {
+							fmt.Println("Process does not exist.")
+							return
+						}
 
 						hourMinutes := strings.Split(whitespaceSplit[2], ":")
 
@@ -130,7 +135,7 @@ func executor(in string) {
 
 					file_location := whitespaceSplit[1]
 
-					file, err := src.Parse(file_location)
+					processes, err := src.Parse(file_location)
 
 					if err != nil {
 
@@ -138,7 +143,7 @@ func executor(in string) {
 
 					} else {
 
-						network.Reload(file)
+						network.Reload(processes)
 
 					}
 				}
@@ -157,6 +162,11 @@ func executor(in string) {
 
 						fmt.Println("Failed to parse process id")
 					} else {
+						_, exists := network.Processes[int(processId)]
+						if !exists {
+							fmt.Println("Process does not exist.")
+							return
+						}
 
 						network.Freeze(int(processId))
 
@@ -178,7 +188,11 @@ func executor(in string) {
 
 						fmt.Println("Failed to parse process id")
 					} else {
-
+						_, exists := network.Processes[int(processId)]
+						if !exists {
+							fmt.Println("Process does not exist.")
+							return
+						}
 						network.Unfreeze(int(processId))
 
 					}
@@ -200,7 +214,11 @@ func executor(in string) {
 
 						fmt.Println("Failed to parse process id")
 					} else {
-
+						_, exists := network.Processes[int(processId)]
+						if !exists {
+							fmt.Println("Process does not exist.")
+							return
+						}
 						network.Kill(int(processId))
 
 					}

@@ -155,6 +155,16 @@ func (n *Network) Freeze(processId int) {
 
 			process.Coordinator = nil
 
+			// from https://piazza.com/class/klsd1d3jd5q6qi?cid=20#
+			// “If coordinator is removed in any condition, then default time should be used”
+			// we assume that "removed in any condition = Killed or Frozen"
+			if !process.Frozen && process.Id != processId {
+
+				newTime := *(process.InitialTime)
+				process.Time = &newTime
+
+			}
+
 		}
 
 		n.Coordinator = nil
@@ -162,16 +172,16 @@ func (n *Network) Freeze(processId int) {
 		for _, process := range n.Processes {
 
 			if !process.Frozen {
-
+				fmt.Println("Starting election from:", process.Id)
 				n.BullyStartingFrom(process.Id)
 				//n.Berkley()
 
-				return
+				break
 
 			}
 
 		}
-
+		fmt.Println("The new coordinator is:", n.Coordinator.Id)
 	}
 
 }
@@ -206,7 +216,6 @@ func (n *Network) Unfreeze(processId int) {
 		}
 
 	}
-
 }
 
 func (n *Network) Kill(processId int) {

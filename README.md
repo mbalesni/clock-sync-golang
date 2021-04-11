@@ -5,6 +5,10 @@
 - Bully Election Algorithm: [Seminar 7](https://courses.cs.ut.ee/2021/ds/spring/Main/Instructions3), [Wiki](https://en.wikipedia.org/wiki/Bully_algorithm) (better)
 - Berkeley Time Sync: [Lecture, Slide 27](https://courses.cs.ut.ee/LTAT.06.007/2021_spring/uploads/Main/Lecture6-2021.pdf)
 
+## Assumptions
+
+1. We assume that IF the coordinator is killed OR frozen, that the next coordinator will use its DEFAULT clock to sync. This was taken from moodle, where Huber said "Yes, if coordinator is removed in any condition, then default time (from file) should be used."
+
 ## Run tests
 
 ```bash

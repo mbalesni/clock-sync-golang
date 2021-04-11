@@ -6,12 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// 1, A_0, 11:00
-// 3, B_0, 13:33
-// 4, D_0, 17:30
-// 7, E_0, 23:00
-// 5, F_0, 3:00
-
 func GetProcessIdxById(id int, processes []*Process) int {
 	for i, process := range processes {
 		if process.Id == id {

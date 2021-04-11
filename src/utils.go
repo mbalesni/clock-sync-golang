@@ -2,35 +2,6 @@ package src
 
 import "fmt"
 
-func absInt(x int) int {
-
-	if x < 0 {
-
-		return -x
-
-	}
-	return x
-
-}
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
-func mod(a, b int) int {
-	m := a % b
-	if a < 0 && b < 0 {
-		m -= b
-	}
-	if a < 0 && b > 0 {
-		m += b
-	}
-	return m
-}
-
 func unidirectionalRingDistance(from, to, maxSize int) int {
 
 	toFrom := to - from
